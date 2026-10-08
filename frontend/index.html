@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1220">
+<title>RoadWatch — Intelligent Road Monitoring</title>
+<style>
+:root{
+  --bg:#f4f7fb; --surface:#fff; --surface-2:#f8fafc; --ink:#0f172a; --muted:#64748b;
+  --line:#e2e8f0; --navy:#0b1220; --blue:#2563eb; --blue-2:#dbeafe;
+  --red:#dc2626; --red-bg:#fee2e2; --amber:#d97706; --amber-bg:#fef3c7;
+  --green:#059669; --green-bg:#d1fae5; --shadow:0 10px 30px rgba(15,23,42,.06);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{min-height:100vh;display:grid;grid-template-columns:240px 1fr}
+.sidebar{position:sticky;top:0;height:100vh;background:var(--navy);color:#cbd5e1;padding:22px 16px;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:11px;color:#fff;font-weight:800;font-size:17px;padding:4px 8px 26px}
+.logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#60a5fa,#2563eb);display:grid;place-items:center;color:white;font-weight:900}
+.brand small{display:block;color:#64748b;font-weight:500;font-size:10px;margin-top:2px}
+.nav{display:grid;gap:6px}
+.nav a{color:#94a3b8;text-decoration:none;padding:11px 12px;border-radius:10px;font-size:13px;font-weight:600}
+.nav a:hover,.nav a.active{background:#18243a;color:#fff}
+.side-bottom{margin-top:auto;border-top:1px solid #1e293b;padding:16px 8px 4px;font-size:11px;color:#64748b;line-height:1.55}
+.main{min-width:0}
+.topbar{height:72px;background:rgba(255,255,255,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:10}
+.topbar h1{font-size:17px;margin:0 0 2px}
+.topbar p{margin:0;color:var(--muted);font-size:12px}
+.actions{display:flex;align-items:center;gap:10px}
+.status{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);padding:8px 11px;border:1px solid var(--line);border-radius:999px;background:#fff}
+.dot{width:8px;height:8px;border-radius:50%;background:#94a3b8}
+.dot.live{background:#10b981;box-shadow:0 0 0 4px #d1fae5}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:9px 13px;border-radius:10px;font-size:12px;font-weight:700}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue)}
+.content{max-width:1450px;margin:auto;padding:28px 32px 50px}
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:22px}
+.hero h2{font-size:30px;line-height:1.1;margin:0 0 7px;letter-spacing:-.03em}
+.hero p{margin:0;color:var(--muted);font-size:13px;max-width:700px}
+.hero-meta{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.pill{padding:7px 10px;border-radius:999px;background:#e0e7ff;color:#3730a3;font-size:11px;font-weight:800}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:12px;font-weight:700}
+.kpi-icon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--surface-2);font-size:16px}
+.kpi-value{font-size:32px;font-weight:850;letter-spacing:-.03em;margin-top:10px}
+.kpi-note{font-size:11px;color:var(--muted);margin-top:3px}
+.kpi.high .kpi-value{color:var(--red)} .kpi.med .kpi-value{color:var(--amber)} .kpi.low .kpi-value{color:var(--green)}
+.grid-main{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(340px,.65fr);gap:18px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
+.panel-title{font-size:14px;font-weight:800;margin:0}
+.panel-sub{font-size:11px;color:var(--muted);margin:3px 0 0}
+.panel-body{padding:18px 20px}
+.routes{display:grid;gap:13px}
+.route-row{display:grid;grid-template-columns:105px 1fr 75px;gap:14px;align-items:center}
+.route-name{font-size:12px;font-weight:800}
+.route-meta{font-size:10px;color:var(--muted);margin-top:2px}
+.bar-wrap{height:12px;background:#edf2f7;border-radius:999px;overflow:hidden;display:flex}
+.bar-high{background:#ef4444}.bar-med{background:#f59e0b}.bar-low{background:#10b981}
+.route-score{text-align:right;font-size:11px;font-weight:800}
+.condition{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:800}
+.condition.critical{background:var(--red-bg);color:#b91c1c}.condition.poor{background:#ffedd5;color:#c2410c}
+.condition.fair{background:var(--amber-bg);color:#a16207}.condition.good{background:var(--green-bg);color:#047857}
+.priority-list{display:grid;gap:10px}
+.priority-item{display:grid;grid-template-columns:32px 1fr auto;gap:11px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.priority-item:last-child{border-bottom:0}
+.rank{width:30px;height:30px;border-radius:9px;background:#eef2ff;color:#4338ca;display:grid;place-items:center;font-size:11px;font-weight:900}
+.priority-main{font-size:12px;font-weight:800}.priority-main span{font-weight:500;color:var(--muted)}
+.priority-score{text-align:right;font-weight:850;font-size:12px}.priority-score small{display:block;color:var(--muted);font-weight:500;font-size:9px}
+.badge{display:inline-flex;align-items:center;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.04em}
+.badge.HIGH{background:var(--red-bg);color:#b91c1c}.badge.MEDIUM{background:var(--amber-bg);color:#a16207}.badge.LOW{background:var(--green-bg);color:#047857}
+.section{margin-top:18px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{text-align:left;padding:11px 20px;border-bottom:1px solid var(--line);font-size:11px;white-space:nowrap}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#fbfcfe}
+tr:hover td{background:#fafcff}
+.chat-panel{display:grid;grid-template-rows:auto auto 1fr auto}
+.chat-log{height:350px;overflow:auto;padding:16px 20px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(#fff,#fbfdff)}
+.msg{max-width:88%;padding:11px 13px;border-radius:14px;font-size:12px;line-height:1.55;white-space:pre-wrap}
+.msg.user{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:5px}
+.msg.bot{align-self:flex-start;background:#f1f5f9;color:var(--ink);border-bottom-left-radius:5px}
+.msg.system{align-self:center;background:#fff;border:1px dashed var(--line);color:var(--muted);font-size:10px}
+.chips{display:flex;gap:7px;overflow:auto;padding:12px 20px;border-bottom:1px solid var(--line)}
+.chip{border:1px solid #dbe3ef;background:#fff;color:#334155;padding:7px 10px;border-radius:999px;font-size:10px;font-weight:700;white-space:nowrap}
+.chip:hover{border-color:#93c5fd;background:#eff6ff;color:#1d4ed8}
+.chat-form{display:flex;gap:9px;padding:14px 20px;border-top:1px solid var(--line)}
+.chat-form input{flex:1;min-width:0;border:1px solid var(--line);border-radius:11px;padding:11px 12px;outline:none;font-size:12px}
+.chat-form input:focus{border-color:#93c5fd;box-shadow:0 0 0 3px #dbeafe}
+.empty{padding:25px;text-align:center;color:var(--muted);font-size:12px}
+.loading{color:var(--muted)}
+.toast{position:fixed;right:22px;bottom:22px;background:#0f172a;color:#fff;padding:11px 14px;border-radius:11px;font-size:11px;box-shadow:0 10px 25px #0003;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;z-index:30}
+.toast.show{opacity:1;transform:none}
+.report{line-height:1.6;font-size:12px;color:#334155}
+.report strong{color:var(--ink)}
+@media(max-width:1100px){.app{grid-template-columns:78px 1fr}.brand-text,.nav a span,.side-bottom{display:none}.brand{justify-content:center}.nav a{text-align:center}.grid-main{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.app{display:block}.sidebar{display:none}.topbar{padding:0 16px}.topbar p{display:none}.content{padding:20px 14px}.hero{display:block}.hero-meta{justify-content:flex-start;margin-top:14px}.hero h2{font-size:25px}.kpis{grid-template-columns:1fr 1fr}.route-row{grid-template-columns:90px 1fr 62px}.actions .btn{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">R</div>
+      <div class="brand-text">RoadWatch<small>INTELLIGENT MONITORING</small></div>
+    </div>
+    <nav class="nav">
+      <a class="active" href="#overview">◈ <span>Overview</span></a>
+      <a href="#routes">▤ <span>Routes</span></a>
+      <a href="#priority">⚑ <span>Priority</span></a>
+      <a href="#incidents">◷ <span>Incidents</span></a>
+      <a href="#assistant">✦ <span>AI Assistant</span></a>
+    </nav>
+    <div class="side-bottom">YOLO → Risk Engine → MySQL → Dashboard → GenAI<br><br>Built for near-real-time road inspection.</div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <h1>Road Monitoring Command Center</h1>
+        <p>Detection, risk assessment and AI-assisted inspection decisions</p>
+      </div>
+      <div class="actions">
+        <div class="status"><i class="dot" id="statusDot"></i><span id="status">Connecting…</span></div>
+        <button class="btn" id="refreshBtn">↻ Refresh</button>
+        <a class="btn primary" href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener">API Docs ↗</a>
+      </div>
+    </header>
+
+    <main class="content" id="overview">
+      <section class="hero">
+        <div>
+          <h2>Road condition at a glance.</h2>
+          <p>Monitor current detections, identify the most critical routes and ask the inspection assistant for evidence-based answers.</p>
+        </div>
+        <div class="hero-meta">
+          <span class="pill">LIVE DATABASE</span>
+          <span class="pill">AI-ASSISTED</span>
+        </div>
+      </section>
+
+      <section class="kpis">
+        <div class="kpi"><div class="kpi-top"><span>Total detections</span><span class="kpi-icon">●</span></div><div class="kpi-value" id="s-total">—</div><div class="kpi-note">All recorded potholes</div></div>
+        <div class="kpi high"><div class="kpi-top"><span>High risk</span><span class="kpi-icon">!</span></div><div class="kpi-value" id="s-high">—</div><div class="kpi-note">Immediate attention</div></div>
+        <div class="kpi med"><div class="kpi-top"><span>Medium risk</span><span class="kpi-icon">△</span></div><div class="kpi-value" id="s-med">—</div><div class="kpi-note">Schedule inspection</div></div>
+        <div class="kpi low"><div class="kpi-top"><span>Low risk</span><span class="kpi-icon">✓</span></div><div class="kpi-value" id="s-low">—</div><div class="kpi-note">Monitor condition</div></div>
+      </section>
+
+      <section class="grid-main">
+        <div class="panel" id="routes">
+          <div class="panel-head">
+            <div><h3 class="panel-title">Route condition</h3><p class="panel-sub">Risk distribution across detected potholes</p></div>
+            <button class="btn" id="routeAsk">Ask about routes</button>
+          </div>
+          <div class="panel-body"><div class="routes" id="routeChart"><div class="empty">Loading route data…</div></div></div>
+        </div>
+
+        <div class="panel" id="priority">
+          <div class="panel-head">
+            <div><h3 class="panel-title">Inspect first</h3><p class="panel-sub">Ranked by severity score</p></div>
+            <span class="badge HIGH">TOP 5</span>
+          </div>
+          <div class="panel-body"><div class="priority-list" id="priorityList"><div class="empty">Loading…</div></div></div>
+        </div>
+      </section>
+
+      <section class="section panel" id="assistant">
+        <div class="panel-head">
+          <div><h3 class="panel-title">Inspection Assistant</h3><p class="panel-sub">Ask questions using the live database</p></div>
+          <button class="btn" id="reportBtn">Generate today's report</button>
+        </div>
+        <div class="chat-panel">
+          <div class="chips" id="chips"></div>
+          <div class="chat-log" id="log">
+            <div class="msg system">Ask about risk, routes, priorities or today's inspection. Answers are grounded in the database.</div>
+          </div>
+          <form class="chat-form" id="form">
+            <input id="q" type="text" autocomplete="off" placeholder="Ask: Which route has the most dangerous potholes?">
+            <button class="btn primary" type="submit">Ask AI</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="section panel" id="incidents">
+        <div class="panel-head">
+          <div><h3 class="panel-title">Latest incidents</h3><p class="panel-sub">Most recent detections received by the system</p></div>
+          <button class="btn" id="incRefresh">Refresh table</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Route</th><th>Detected</th><th>Confidence</th><th>Severity</th><th>Risk</th><th>Coordinates</th></tr></thead>
+            <tbody id="incidentsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "http://127.0.0.1:8000";
+const $ = id => document.getElementById(id);
+const QUESTIONS = [
+  "How many high-risk potholes were detected?",
+  "Which route has the most dangerous potholes?",
+  "Summarize today's inspection.",
+  "Which incidents should be inspected first?",
+  "Show me the road condition of Route A."
+];
+
+function toast(text){
+  $("toast").textContent = text;
+  $("toast").classList.add("show");
+  clearTimeout(window.__toast);
+  window.__toast = setTimeout(() => $("toast").classList.remove("show"), 2600);
+}
+async function get(path){
+  const r = await fetch(API + path);
+  if(!r.ok) throw new Error(path + " → " + r.status);
+  return r.json();
+}
+function condition(high,total){
+  const ratio = total ? high/total : 0;
+  if(ratio >= .4) return ["critical","Critical"];
+  if(ratio >= .25) return ["poor","Poor"];
+  if(ratio > 0) return ["fair","Fair"];
+  return ["good","Good"];
+}
+function riskBadge(level){ return `<span class="badge ${level}">${level}</span>`; }
+
+function renderRoutes(rows){
+  const box=$("routeChart");
+  box.replaceChildren();
+  if(!rows.length){ box.innerHTML='<div class="empty">No route data available.</div>'; return; }
+  rows.forEach(r=>{
+    const total=Number(r.total)||0, high=Number(r.high_risk)||0, med=Number(r.medium_risk)||0, low=Number(r.low_risk)||0;
+    const [cls,label]=condition(high,total);
+    const row=document.createElement("div");
+    row.className="route-row";
+    row.innerHTML=`
+      <div><div class="route-name">${r.route}</div><div class="route-meta">${total} detections · ${high} high</div></div>
+      <div>
+        <div class="bar-wrap" title="${r.route}: ${high} high, ${med} medium, ${low} low">
+          <div class="bar-high" style="width:${total?high/total*100:0}%"></div>
+          <div class="bar-med" style="width:${total?med/total*100:0}%"></div>
+          <div class="bar-low" style="width:${total?low/total*100:0}%"></div>
+        </div>
+      </div>
+      <div class="route-score"><span class="condition ${cls}">${label}</span></div>`;
+    row.querySelector(".bar-wrap").onclick=()=>ask(`Show me the road condition of ${r.route}.`);
+    box.appendChild(row);
+  });
+}
+function renderPriority(rows){
+  const box=$("priorityList"); box.replaceChildren();
+  if(!rows.length){box.innerHTML='<div class="empty">No incidents recorded.</div>';return;}
+  rows.forEach((r,i)=>{
+    const item=document.createElement("div"); item.className="priority-item";
+    item.innerHTML=`
+      <div class="rank">${i+1}</div>
+      <div class="priority-main">Incident #${r.id} <span>· ${r.route}</span><br>${riskBadge(r.risk_level)}</div>
+      <div class="priority-score">${Number(r.severity_score).toFixed(2)}<small>severity</small></div>`;
+    box.appendChild(item);
+  });
+}
+function renderIncidents(rows){
+  const body=$("incidentsBody"); body.replaceChildren();
+  if(!rows.length){body.innerHTML='<tr><td colspan="7" class="empty">No incidents recorded.</td></tr>';return;}
+  rows.forEach(r=>{
+    const tr=document.createElement("tr");
+    const ts=r.timestamp ? new Date(r.timestamp.replace(" ","T")).toLocaleString() : "—";
+    const lat=Number(r.latitude), lon=Number(r.longitude);
+    tr.innerHTML=`<td>#${r.id}</td><td><strong>${r.route}</strong></td><td>${ts}</td><td>${Number(r.confidence).toFixed(2)}</td><td>${Number(r.severity_score).toFixed(2)}</td><td>${riskBadge(r.risk_level)}</td><td>${Number.isFinite(lat)?lat.toFixed(4):"—"}, ${Number.isFinite(lon)?lon.toFixed(4):"—"}</td>`;
+    body.appendChild(tr);
+  });
+}
+async function refresh(){
+  $("status").textContent="Updating…";
+  $("statusDot").classList.remove("live");
+  try{
+    const [stats,routes,priority,incidents]=await Promise.all([
+      get("/statistics"),get("/routes"),get("/priority?limit=5"),get("/incidents?limit=20")
+    ]);
+    $("s-total").textContent=stats.total;
+    $("s-high").textContent=stats.high_risk;
+    $("s-med").textContent=stats.medium_risk;
+    $("s-low").textContent=stats.low_risk;
+    renderRoutes(routes); renderPriority(priority); renderIncidents(incidents);
+    $("status").textContent="Live · "+new Date().toLocaleTimeString();
+    $("statusDot").classList.add("live");
+  }catch(e){
+    $("status").textContent="API unavailable";
+    toast("Start the FastAPI server to connect the dashboard.");
+  }
+}
+function addMsg(text,kind){
+  const d=document.createElement("div"); d.className="msg "+kind; d.textContent=text;
+  $("log").appendChild(d); $("log").scrollTop=$("log").scrollHeight; return d;
+}
+async function ask(text){
+  if(!text) return;
+  addMsg(text,"user");
+  const wait=addMsg("Analyzing the latest inspection data…","bot");
+  try{
+    const r=await fetch(API+"/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:text})});
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.detail||"Request failed");
+    wait.textContent=data.answer||"No answer returned.";
+  }catch(e){wait.textContent="I couldn't reach the GenAI service. Make sure uvicorn is running and, if you want LLM-generated wording, Ollama is available.";toast("AI request failed");}
+}
+async function report(){
+  addMsg("Generate today's inspection report","user");
+  const wait=addMsg("Generating report from the current database…","bot");
+  try{
+    const data=await get("/report");
+    wait.textContent=data.report || "No report returned.";
+  }catch(e){wait.textContent="The report could not be generated. Check that the API and database are running.";}
+}
+QUESTIONS.forEach(q=>{
+  const b=document.createElement("button"); b.className="chip"; b.type="button"; b.textContent=q;
+  b.onclick=()=>ask(q); $("chips").appendChild(b);
+});
+$("form").addEventListener("submit",e=>{e.preventDefault();const v=$("q").value.trim();$("q").value="";ask(v)});
+$("refreshBtn").onclick=refresh;
+$("incRefresh").onclick=refresh;
+$("routeAsk").onclick=()=>ask("Which route has the most dangerous potholes?");
+$("reportBtn").onclick=report;
+refresh();
+setInterval(refresh,5000);
+</script>
+</body>
+</html>
