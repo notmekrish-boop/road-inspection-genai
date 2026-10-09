@@ -1,15 +1,38 @@
-# Secrets
-.env
-backend/.env
-
 # Python
 __pycache__/
 *.py[cod]
 *.pyo
-.venv/
-venv/
 
-# OS / editor
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Database
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+
+# YOLO training outputs
+runs/
+*.cache
+
+# Generated outputs
+demo/output/
+demo/input/uploads/
+
+# Temporary files
+*.tmp
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
 .DS_Store
 Thumbs.db
-.vscode/
+
+# Dataset images and labels
+dataset/images/
+dataset/labels/
